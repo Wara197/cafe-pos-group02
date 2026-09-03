@@ -1,11 +1,13 @@
-// src/controllers/orderController.js (หลังแยก Model)
+// src/controllers/orderController.js (ปรับปรุงจาก Sprint 1 ให้ใช้ class Order/OrderItem)
 const orderModel = require("../models/orderModel");
+const { Order } = require("../models/Order");
 
 const VALID_PAYMENT_METHODS = ["cash", "credit", "qr"];
 
 exports.createOrder = async (req, res) => {
   const { items, paymentMethod } = req.body;
 
+  // ... validation เหมือนเดิมทุกจุดตาม wk05.md หัวข้อ 1.4 ...
   if (!Array.isArray(items) || items.length === 0) {
     return res
       .status(400)
@@ -35,10 +37,19 @@ exports.createOrder = async (req, res) => {
       .json({ error: "paymentMethod ไม่ถูกต้องหรือไม่ได้ระบุ" });
   }
 
-  const totalAmount = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  );
+  const order = new Order(paymentMethod);
+  // ยังไม่มี MenuItem class จริง (ตามหัวข้อ 2.3 เป็นตัวเลือกเสริม) จึงส่ง item
+  // ที่รับมาจาก request body โดยตรงเข้า addItem() แทน MenuItem instance ไปก่อน
+  // เพราะ item นั้นมี field "price" อยู่แล้วซึ่งพอสำหรับ OrderItem ใช้คำนวณ
+  items.forEach((item) => order.addItem(item, item.quantity));
+
+  if (!order.submit()) {
+    return res
+      .status(400)
+      .json({ error: "ต้องมีรายการสินค้าอย่างน้อย 1 รายการ" });
+  }
+
+  const totalAmount = order.calculateTotal(); // แทนที่ items.reduce(...) เดิม
 
   try {
     // Controller ไม่มีคำสั่ง SQL หลงเหลืออยู่เลย เรียกผ่าน Model แทน
