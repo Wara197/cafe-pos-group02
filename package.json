@@ -12,6 +12,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "check": "node --check src/app.js && node --check src/config/db.js && node --check src/utils/validate.js && node --check src/controllers/orderController.js && node --check src/controllers/menuController.js && node --check src/models/orderModel.js && node --check src/models/menuModel.js && node --check src/routes/orderRoutes.js && node --check src/routes/menuRoutes.js"
   }
 }
